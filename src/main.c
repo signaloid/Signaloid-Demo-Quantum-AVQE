@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <uncertain.h>
+#include <uxhw.h>
 
 typedef enum
 {
@@ -79,7 +79,7 @@ main(int argc, char * argv[])
 	/*
 	 *	Define Phi Prior
 	 */
-	Phi[0] = libUncertainDoubleUniformDist(-M_PI, M_PI);
+	Phi[0] = UxHwDoubleUniformDist(-M_PI, M_PI);
 
 	printf("Phi (iter 0): %lf\n", Phi[0]);
 	for (size_t i = 0; i < QPEsteps; i++)
@@ -96,13 +96,13 @@ main(int argc, char * argv[])
 float
 calcM(double Phi, float alpha)
 {
-	return 1 / pow(sqrt(libUncertainDoubleNthMoment(Phi, 2)), alpha);
+	return 1 / pow(sqrt(UxHwDoubleNthMoment(Phi, 2)), alpha);
 }
 
 float
 calcTheta(double Phi)
 {
-	return libUncertainDoubleNthMoment(Phi, 1) - sqrt(libUncertainDoubleNthMoment(Phi, 2));
+	return UxHwDoubleNthMoment(Phi, 1) - sqrt(UxHwDoubleNthMoment(Phi, 2));
 }
 
 double
@@ -132,18 +132,18 @@ bayesianQPEupdate(double Phi, float M, float theta, BenchmarkModes benchmarkMode
 		for (size_t i = 0; i < n_samples; i++)
 		{
 			E0_given_phi_samples[i] =
-				((1 + cos(M * (libUncertainDoubleSample(Phi) - theta))) / 2);
+				((1 + cos(M * (UxHwDoubleSample(Phi) - theta))) / 2);
 			E1_given_phi_samples[i] =
-				((1 - cos(M * (libUncertainDoubleSample(Phi) - theta))) / 2);
+				((1 - cos(M * (UxHwDoubleSample(Phi) - theta))) / 2);
 		}
-		E0_given_phi = libUncertainDoubleDistFromSamples(E0_given_phi_samples, n_samples);
-		E1_given_phi = libUncertainDoubleDistFromSamples(E1_given_phi_samples, n_samples);
+		E0_given_phi = UxHwDoubleDistFromSamples(E0_given_phi_samples, n_samples);
+		E1_given_phi = UxHwDoubleDistFromSamples(E1_given_phi_samples, n_samples);
 	}
 
 	Phi_given_E0 = E0_given_phi * Phi; // proportional to
 	Phi_given_E1 = E1_given_phi * Phi; // proportional to
 
-	Phi_given_E01 = libUncertainDoubleMixture(Phi_given_E0, Phi_given_E1, 0.5);
+	Phi_given_E01 = UxHwDoubleMixture(Phi_given_E0, Phi_given_E1, 0.5);
 	return Phi_given_E01;
 }
 
@@ -161,7 +161,7 @@ calcPosterior_bySampling(double prior, double likelihood, const int n_samples)
 	for (i = 0; i < n_samples; i++)
 	{
 		sample_array[i] =
-			libUncertainDoubleSample(prior) * libUncertainDoubleSample(likelihood);
+			UxHwDoubleSample(prior) * UxHwDoubleSample(likelihood);
 	}
-	return libUncertainDoubleDistFromSamples(sample_array, n_samples);
+	return UxHwDoubleDistFromSamples(sample_array, n_samples);
 }
